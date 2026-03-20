@@ -566,8 +566,8 @@ function addDir(d){
     beepOK();vibe([60,40,60,40,120]);
     showFlash(exact);resetTimer=setTimeout(clr,4800);
   } else {
-    if(getFiltered().length===0)beepErr();else beep(400+inp.length*50,.06,'square');
-    vibe(25);
+    if(getFiltered().length===0){beepErr();vibe([30,20,30]);inp=[];}
+    else{beep(400+inp.length*50,.06,'square');vibe(25);}
   }
   render();
 }
