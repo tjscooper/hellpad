@@ -188,6 +188,13 @@
       text-align:center;padding:0 20px;text-shadow:0 0 20px var(--success2);}
     #flash-code{font-size:18px;color:var(--glow);letter-spacing:5px;text-shadow:0 0 12px var(--glow);}
     #flash-label{font-size:10px;letter-spacing:6px;color:var(--text-dim);}
+    #flash-bar{
+      position:absolute;bottom:0;left:0;height:4px;width:100%;
+      background:var(--glow);box-shadow:0 0 10px var(--glow);
+      transform-origin:left center;transform:scaleX(0);
+    }
+    #flash.show #flash-bar{animation:flash-shrink 4800ms linear forwards;}
+    @keyframes flash-shrink{from{transform:scaleX(1);}to{transform:scaleX(0);}}
 
     /* fullscreen */
     :fullscreen #app,:-webkit-full-screen #app{width:100vw;height:100dvh;}
@@ -204,6 +211,7 @@
   <div id="flash-name">REINFORCE</div>
   <div id="flash-code">↑ ↓ → ← ↑</div>
   <div id="flash-label">STRATAGEM INBOUND</div>
+  <div id="flash-bar"></div>
 </div>
 
 <!-- BACKDROP -->
@@ -450,7 +458,7 @@ function addDir(d){
   const exact=getExact();
   if(exact){
     beepOK();vibe([60,40,60,40,120]);
-    showFlash(exact);resetTimer=setTimeout(clr,3500);
+    showFlash(exact);resetTimer=setTimeout(clr,5500);
   } else {
     if(getFiltered().length===0)beepErr();else beep(400+inp.length*50,.06,'square');
     vibe(25);
@@ -477,7 +485,7 @@ function showFlash(s){
   document.getElementById('flash-name').style.color=CAT_COLOR[s.c]||'var(--success)';
   document.getElementById('flash-code').textContent=s.k.map(d=>SYM[d]).join(' ');
   const fl=document.getElementById('flash');
-  fl.classList.add('show');setTimeout(()=>fl.classList.remove('show'),2400);
+  fl.classList.add('show');setTimeout(()=>fl.classList.remove('show'),4800);
 }
 
 /* ── ARROW SVG (for strip) ── */
