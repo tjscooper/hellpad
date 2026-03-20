@@ -11,25 +11,14 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     :root{
-      --bg:#020509;
-      --panel:#060d18;
-      --panel2:#0a1828;
-      --border:#1a5a7a;
-      --glow:#00c8f0;
-      --glow2:#0090c0;
-      --text:#a0d8f0;
-      --text-bright:#d0f0ff;
-      --text-dim:#2a6080;
-      --btn-bg:#040c18;
-      --success:#f0a040;
-      --success2:#e06820;
-      --danger:#d03040;
+      --bg:#020509; --panel:#060d18; --panel2:#0a1828;
+      --border:#1a5a7a; --glow:#00c8f0; --glow2:#0090c0;
+      --text:#a0d8f0; --text-bright:#d0f0ff; --text-dim:#2a6080;
+      --btn-bg:#040c18; --success:#f0a040; --success2:#e06820; --danger:#d03040;
     }
     html,body{height:100%;width:100%;background:var(--bg);color:var(--text);
       font-family:'Courier New',Courier,monospace;overflow:hidden;
       user-select:none;-webkit-user-select:none;}
-
-    /* scanline overlay */
     body::after{content:'';position:fixed;inset:0;
       background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px);
       pointer-events:none;z-index:9999;}
@@ -40,91 +29,115 @@
     #hdr{display:flex;align-items:center;justify-content:space-between;
       padding:6px 12px;border-bottom:1px solid var(--border);
       background:var(--panel);flex-shrink:0;}
-    #hdr-title{display:flex;align-items:center;gap:8px;font-size:20px;
-      font-weight:bold;letter-spacing:5px;color:var(--glow);
+    #hdr-title{font-size:20px;font-weight:bold;letter-spacing:5px;color:var(--glow);
       text-shadow:0 0 8px var(--glow),0 0 20px var(--glow2);}
     #hdr-sub{font-size:8px;letter-spacing:2px;color:var(--text-dim);margin-top:1px;}
     #hdr-btns{display:flex;gap:6px;}
     .hbtn{background:var(--btn-bg);border:1px solid var(--border);color:var(--text);
       padding:5px 9px;border-radius:3px;cursor:pointer;font-family:inherit;
-      font-size:11px;letter-spacing:1px;transition:all .1s;}
-    .hbtn:active{border-color:var(--glow);color:var(--glow);background:rgba(0,200,240,.08);}
+      font-size:11px;letter-spacing:1px;transition:all .15s;}
+    .hbtn:active,.hbtn.active{border-color:var(--glow);color:var(--glow);background:rgba(0,200,240,.1);}
 
     /* ── SEQUENCE ── */
-    #seq-section{padding:8px 12px;border-bottom:1px solid var(--border);
+    #seq-section{padding:7px 12px;border-bottom:1px solid var(--border);
       background:var(--panel);flex-shrink:0;}
-    #seq-label{font-size:8px;letter-spacing:3px;color:var(--text-dim);margin-bottom:5px;}
-    #seq-display{display:flex;align-items:center;gap:4px;flex-wrap:wrap;
-      min-height:38px;padding:5px 8px;background:var(--bg);
+    #seq-label{font-size:8px;letter-spacing:3px;color:var(--text-dim);margin-bottom:4px;}
+    #seq-display{display:flex;align-items:center;gap:3px;flex-wrap:wrap;
+      min-height:34px;padding:4px 7px;background:var(--bg);
       border:1px solid var(--border);border-radius:3px;}
     .seq-arrow{display:inline-flex;align-items:center;justify-content:center;
-      width:28px;height:28px;background:var(--panel2);border:1px solid var(--border);
-      border-radius:3px;font-size:15px;color:var(--glow);
+      width:26px;height:26px;background:var(--panel2);border:1px solid var(--border);
+      border-radius:3px;font-size:14px;color:var(--glow);
       text-shadow:0 0 6px var(--glow);flex-shrink:0;animation:ain .1s ease;}
-    @keyframes ain{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
-    .seq-cursor{width:2px;height:22px;background:var(--glow);border-radius:1px;
-      animation:blink 1s step-end infinite;}
-    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+    @keyframes ain{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+    .seq-cursor{width:2px;height:20px;background:var(--glow);border-radius:1px;animation:blink 1s step-end infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
     #seq-empty{color:var(--text-dim);font-size:10px;letter-spacing:2px;}
 
     /* ── MATCH STATUS ── */
-    #match-section{padding:7px 12px;border-bottom:1px solid var(--border);
-      flex-shrink:0;min-height:54px;display:flex;align-items:center;
-      background:var(--panel);transition:all .3s;}
+    #match-section{padding:6px 12px;border-bottom:1px solid var(--border);
+      flex-shrink:0;min-height:50px;display:flex;align-items:center;
+      background:var(--panel);transition:background .3s;}
     #match-section.matched{background:#160800;}
-    #match-empty{color:var(--text-dim);font-size:9px;letter-spacing:3px;
-      width:100%;text-align:center;}
+    #match-empty{color:var(--text-dim);font-size:9px;letter-spacing:3px;width:100%;text-align:center;}
     #match-content{display:none;width:100%;align-items:center;gap:10px;}
     #match-content.show{display:flex;}
-    #match-icon{font-size:26px;flex-shrink:0;}
+    #match-icon-wrap{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+    #match-icon-img{width:36px;height:36px;object-fit:contain;display:none;}
+    #match-icon-emoji{font-size:26px;}
     #match-info{flex:1;min-width:0;}
-    #match-name{font-size:15px;font-weight:bold;color:var(--success);
+    #match-name{font-size:14px;font-weight:bold;color:var(--success);
       text-shadow:0 0 10px var(--success2);letter-spacing:1px;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     #match-cat{font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-top:2px;}
-    #match-status{font-size:9px;letter-spacing:2px;color:var(--success);
-      flex-shrink:0;text-align:right;}
+    #match-status{font-size:9px;letter-spacing:2px;color:var(--success);flex-shrink:0;}
 
-    /* ── LIST ── */
-    #list-section{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);}
-    #list-section::-webkit-scrollbar{width:3px;}
-    #list-section::-webkit-scrollbar-track{background:var(--bg);}
-    #list-section::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    /* ── LIST SECTION (hidden by default) ── */
+    #list-section{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
+    #app.list-open #list-section{display:flex;}
     #list-hdr{display:flex;align-items:center;justify-content:space-between;
-      padding:5px 12px;position:sticky;top:0;background:var(--panel);
-      border-bottom:1px solid var(--border);z-index:10;}
+      padding:4px 12px;position:sticky;top:0;background:var(--panel);
+      border-bottom:1px solid var(--border);flex-shrink:0;}
     #list-title{font-size:8px;letter-spacing:3px;color:var(--text-dim);}
     #list-count{font-size:9px;color:var(--glow);}
-    .si{display:flex;align-items:center;padding:7px 12px;
+    #stratagem-list{flex:1;overflow-y:auto;overflow-x:hidden;}
+    #stratagem-list::-webkit-scrollbar{width:3px;}
+    #stratagem-list::-webkit-scrollbar-track{background:var(--bg);}
+    #stratagem-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    .si{display:flex;align-items:center;padding:6px 12px;
       border-bottom:1px solid #081422;cursor:pointer;transition:background .1s;gap:8px;}
     .si:active,.si:hover{background:var(--panel2);}
-    .si.exact{background:#160800;border-color:var(--success);}
-    .si-code{font-size:11px;color:var(--glow);letter-spacing:1px;flex-shrink:0;
-      width:125px;text-shadow:0 0 4px rgba(0,200,240,.3);}
-    .si-code .mp{color:var(--success);text-shadow:0 0 4px rgba(240,160,64,.5);}
+    .si.exact{background:#160800;}
+    .si-img{width:22px;height:22px;object-fit:contain;flex-shrink:0;opacity:.85;}
+    .si-code{font-size:10px;color:var(--glow);letter-spacing:1px;flex-shrink:0;
+      width:110px;text-shadow:0 0 4px rgba(0,200,240,.3);}
+    .si-code .mp{color:var(--success);}
     .si-name{flex:1;font-size:12px;color:var(--text-bright);
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .si-cat{font-size:7px;letter-spacing:1px;padding:2px 4px;
-      border-radius:2px;flex-shrink:0;}
+    .si-cat{font-size:7px;letter-spacing:1px;padding:2px 4px;border-radius:2px;flex-shrink:0;}
 
-    /* ── DPAD ── */
-    #dpad-section{flex-shrink:0;padding:10px 12px 8px;
-      background:var(--panel);border-top:1px solid var(--border);}
-    #dpad{display:grid;grid-template-columns:repeat(3,1fr);
-      grid-template-rows:repeat(3,1fr);gap:4px;
-      width:204px;height:204px;margin:0 auto 8px;}
+    /* ── DPAD SECTION ── */
+    #dpad-section{flex-shrink:0;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:10px 12px 8px;background:var(--panel);border-top:1px solid var(--border);}
+    /* Expand to fill when list is closed */
+    #app:not(.list-open) #dpad-section{flex:1;}
+
+    /* Blue dpad container */
+    #dpad-bg{
+      background:radial-gradient(ellipse at 46% 38%, #2462d4 0%, #0c3490 42%, #040e40 100%);
+      border-radius:18px;padding:10px;
+      box-shadow:0 0 50px rgba(16,70,220,.55),inset 0 0 40px rgba(0,0,80,.45),0 8px 32px rgba(0,0,0,.7);}
+    /* Size: large when list closed, smaller when open */
+    #app:not(.list-open) #dpad-bg{width:min(300px,82vw);}
+    #app.list-open #dpad-bg{width:min(216px,72vw);}
+
+    /* 3×3 grid */
+    #dpad-grid{display:grid;grid-template-columns:repeat(3,1fr);
+      grid-template-rows:repeat(3,1fr);gap:5px;
+      width:100%;aspect-ratio:1;}
+
+    /* Arrow buttons */
     .db{display:flex;align-items:center;justify-content:center;
-      background:var(--btn-bg);border:1px solid var(--border);border-radius:5px;
-      font-size:26px;color:var(--text);cursor:pointer;
-      transition:all .1s;touch-action:manipulation;}
-    .db:active,.db.press{background:rgba(0,200,240,.1);border-color:var(--glow);
-      color:var(--glow);text-shadow:0 0 10px var(--glow);transform:scale(.94);}
-    #dc{background:var(--panel2);cursor:default;
-      display:flex;align-items:center;justify-content:center;}
-    #dc-dot{width:7px;height:7px;background:var(--border);border-radius:50%;}
-    .de{visibility:hidden;}
-    #act-row{display:flex;gap:8px;justify-content:center;}
-    .ab{flex:1;max-width:160px;padding:9px;background:var(--btn-bg);
+      background:transparent;border:none;cursor:pointer;
+      padding:0;touch-action:manipulation;border-radius:6px;}
+    .db .asv{transition:transform .12s;}
+    .db .ap{fill:white;filter:drop-shadow(1px 4px 6px rgba(0,0,50,.85));transition:fill .1s,filter .1s;}
+    .db.press .asv{transform:scale(.9) rotate(var(--rot,0deg));}
+    .db.press .ap{fill:#5ad0ff;filter:drop-shadow(0 0 10px rgba(90,208,255,.95)) drop-shadow(1px 4px 6px rgba(0,0,50,.8));}
+
+    /* Center piece */
+    #dpad-center{display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,30,.5);border-radius:6px;}
+    #dpad-center-dot{width:8px;height:8px;background:#1a3a70;border-radius:50%;
+      box-shadow:0 0 6px rgba(0,100,200,.4);}
+    .dpad-corner{visibility:hidden;}
+
+    /* Action row */
+    #act-row{display:flex;gap:8px;justify-content:center;
+      width:min(300px,82vw);margin-top:8px;}
+    #app.list-open #act-row{width:min(216px,72vw);}
+    .ab{flex:1;padding:9px 0;background:var(--btn-bg);
       border:1px solid var(--border);border-radius:5px;color:var(--text);
       font-family:inherit;font-size:10px;letter-spacing:2px;
       cursor:pointer;text-align:center;transition:all .1s;}
@@ -133,26 +146,30 @@
 
     /* ── FLASH OVERLAY ── */
     #flash{position:fixed;inset:0;z-index:10000;
-      background:rgba(2,5,9,.93);display:flex;flex-direction:column;
-      align-items:center;justify-content:center;gap:16px;
+      background:rgba(2,5,9,.94);display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:14px;
       opacity:0;pointer-events:none;transition:opacity .2s;}
     #flash.show{opacity:1;pointer-events:auto;}
-    #flash-icon{font-size:64px;}
+    #flash-img-wrap{width:90px;height:90px;display:flex;align-items:center;justify-content:center;}
+    #flash-img{width:90px;height:90px;object-fit:contain;display:none;}
+    #flash-emoji{font-size:64px;}
     #flash-name{font-size:22px;font-weight:bold;letter-spacing:3px;
-      text-align:center;padding:0 20px;
-      text-shadow:0 0 20px var(--success2);}
+      text-align:center;padding:0 20px;text-shadow:0 0 20px var(--success2);}
+    #flash-code{font-size:20px;color:var(--glow);letter-spacing:6px;text-shadow:0 0 12px var(--glow);}
     #flash-label{font-size:10px;letter-spacing:6px;color:var(--text-dim);}
-    #flash-code{font-size:18px;color:var(--glow);letter-spacing:6px;
-      text-shadow:0 0 10px var(--glow);}
 
-    /* fullscreen helpers */
+    /* fullscreen */
     :fullscreen #app,:-webkit-full-screen #app{max-width:none;}
   </style>
 </head>
 <body>
 
+<!-- FLASH OVERLAY -->
 <div id="flash">
-  <div id="flash-icon">★</div>
+  <div id="flash-img-wrap">
+    <img id="flash-img" src="" alt="">
+    <span id="flash-emoji">★</span>
+  </div>
   <div id="flash-name">REINFORCE</div>
   <div id="flash-code">↑ ↓ → ← ↑</div>
   <div id="flash-label">STRATAGEM INBOUND</div>
@@ -167,11 +184,12 @@
       <div id="hdr-sub">STRATAGEM INPUT SYSTEM</div>
     </div>
     <div id="hdr-btns">
+      <button class="hbtn" id="list-btn" onclick="toggleList()">≡ LIST</button>
       <button class="hbtn" id="fs-btn" onclick="toggleFS()">⛶ FULL</button>
     </div>
   </div>
 
-  <!-- SEQUENCE DISPLAY -->
+  <!-- SEQUENCE -->
   <div id="seq-section">
     <div id="seq-label">ACTIVE CODE SEQUENCE</div>
     <div id="seq-display">
@@ -183,16 +201,19 @@
   <div id="match-section">
     <span id="match-empty">— AWAITING INPUT —</span>
     <div id="match-content">
-      <span id="match-icon">★</span>
+      <div id="match-icon-wrap">
+        <img id="match-icon-img" src="" alt="" onerror="this.style.display='none';document.getElementById('match-icon-emoji').style.display=''">
+        <span id="match-icon-emoji">★</span>
+      </div>
       <div id="match-info">
         <div id="match-name">REINFORCE</div>
         <div id="match-cat">MISSION</div>
       </div>
-      <div id="match-status">READY</div>
+      <div id="match-status">★ CALLED ★</div>
     </div>
   </div>
 
-  <!-- STRATAGEM LIST -->
+  <!-- STRATAGEM LIST (hidden by default) -->
   <div id="list-section">
     <div id="list-hdr">
       <span id="list-title">STRATAGEM DATABASE</span>
@@ -203,40 +224,134 @@
 
   <!-- DPAD -->
   <div id="dpad-section">
-    <div id="dpad">
-      <div class="de"></div>
-      <button class="db" id="bU" ontouchstart="ev('U',this)" onclick="ev('U',this)">↑</button>
-      <div class="de"></div>
-      <button class="db" id="bL" ontouchstart="ev('L',this)" onclick="ev('L',this)">←</button>
-      <div class="db" id="dc"><div id="dc-dot"></div></div>
-      <button class="db" id="bR" ontouchstart="ev('R',this)" onclick="ev('R',this)">→</button>
-      <div class="de"></div>
-      <button class="db" id="bD" ontouchstart="ev('D',this)" onclick="ev('D',this)">↓</button>
-      <div class="de"></div>
+    <div id="dpad-bg">
+      <div id="dpad-grid">
+        <!-- Row 1 -->
+        <div class="dpad-corner"></div>
+        <button class="db" data-dir="U" style="--rot:0deg">
+          <svg class="asv" viewBox="0 0 100 100" style="width:75%;height:75%">
+            <polygon class="ap" points="50,4 96,52 68,52 68,96 32,96 32,52 4,52"/>
+          </svg>
+        </button>
+        <div class="dpad-corner"></div>
+        <!-- Row 2 -->
+        <button class="db" data-dir="L" style="--rot:-90deg">
+          <svg class="asv" viewBox="0 0 100 100" style="width:75%;height:75%;transform:rotate(-90deg)">
+            <polygon class="ap" points="50,4 96,52 68,52 68,96 32,96 32,52 4,52"/>
+          </svg>
+        </button>
+        <div id="dpad-center"><div id="dpad-center-dot"></div></div>
+        <button class="db" data-dir="R" style="--rot:90deg">
+          <svg class="asv" viewBox="0 0 100 100" style="width:75%;height:75%;transform:rotate(90deg)">
+            <polygon class="ap" points="50,4 96,52 68,52 68,96 32,96 32,52 4,52"/>
+          </svg>
+        </button>
+        <!-- Row 3 -->
+        <div class="dpad-corner"></div>
+        <button class="db" data-dir="D" style="--rot:180deg">
+          <svg class="asv" viewBox="0 0 100 100" style="width:75%;height:75%;transform:rotate(180deg)">
+            <polygon class="ap" points="50,4 96,52 68,52 68,96 32,96 32,52 4,52"/>
+          </svg>
+        </button>
+        <div class="dpad-corner"></div>
+      </div>
     </div>
     <div id="act-row">
-      <button class="ab" onclick="bksp()">⌫ BACK</button>
-      <button class="ab dng" onclick="clr()">✗ CLEAR</button>
+      <button class="ab" id="bksp-btn">⌫ BACK</button>
+      <button class="ab dng" id="clr-btn">✗ CLEAR</button>
     </div>
   </div>
 
 </div>
 
 <script>
+const CDN='https://cdn.jsdelivr.net/gh/nvigneux/Helldivers-2-Stratagems-icons-svg@master/';
+const ICONS={
+  "Reinforce":"General Stratagems/Reinforce.svg",
+  "Resupply":"General Stratagems/Resupply.svg",
+  "SOS Beacon":"General Stratagems/SOS Beacon.svg",
+  "Hellbomb":"General Stratagems/Hellbomb.svg",
+  "Seismic Probe":"General Stratagems/Seismic Probe.svg",
+  "Upload Data":"General Stratagems/Upload Data.svg",
+  "Eagle Re-arm":"General Stratagems/Eagle Rearm.svg",
+  "Illumination Flare":"General Stratagems/Orbital Illumination Flare.svg",
+  "SEAF Artillery":"General Stratagems/SEAF Artillery.svg",
+  "Super Earth Flag":"General Stratagems/Super Earth Flag.svg",
+  "Orbital Precision Strike":"Bridge/Orbital Precision Strike.svg",
+  "Orbital Gatling Barrage":"Orbital Cannons/Orbital Gatling Barrage.svg",
+  "Orbital Airburst Strike":"Orbital Cannons/Orbital Airburst Strike.svg",
+  "Orbital 120mm HE Barrage":"Orbital Cannons/Orbital 120MM HE Barrage.svg",
+  "Orbital 380mm HE Barrage":"Orbital Cannons/Orbital 380MM HE Barrage.svg",
+  "Orbital Walking Barrage":"Orbital Cannons/Orbital Walking Barrage.svg",
+  "Orbital Laser":"Orbital Cannons/Orbital Laser.svg",
+  "Orbital Railcannon Strike":"Orbital Cannons/Orbital Railcannon Strike.svg",
+  "Orbital Gas Strike":"Bridge/Orbital Gas Strike.svg",
+  "Orbital EMS Strike":"Bridge/Orbital EMS Strike.svg",
+  "Orbital Smoke Strike":"Bridge/Orbital Smoke Strike.svg",
+  "Orbital Napalm Barrage":"Orbital Cannons/Orbital Napalm Barrage.svg",
+  "Eagle Strafing Run":"Hangar/Eagle Strafing Run.svg",
+  "Eagle Airstrike":"Hangar/Eagle Airstrike.svg",
+  "Eagle Cluster Bomb":"Hangar/Eagle Cluster Bomb.svg",
+  "Eagle Napalm Airstrike":"Hangar/Eagle Napalm Airstrike.svg",
+  "Eagle Smoke Strike":"Hangar/Eagle Smoke Strike.svg",
+  "Eagle 110mm Rocket Pods":"Hangar/Eagle 110MM Rocket Pods.svg",
+  "Eagle 500kg Bomb":"Hangar/Eagle 500KG Bomb.svg",
+  "MG-43 Machine Gun":"Patriotic Administration Center/Machine Gun.svg",
+  "APW-1 Anti-Materiel Rifle":"Patriotic Administration Center/Anti-Materiel Rifle.svg",
+  "M-105 Stalwart":"Patriotic Administration Center/Stalwart.svg",
+  "EAT-17 Expendable AT":"Patriotic Administration Center/Expendable Anti-Tank.svg",
+  "GR-8 Recoilless Rifle":"Patriotic Administration Center/Recoilless Rifle.svg",
+  "FLAM-40 Flamethrower":"Patriotic Administration Center/Flamethrower.svg",
+  "AC-8 Autocannon":"Patriotic Administration Center/Autocannon.svg",
+  "MG-206 Heavy Machine Gun":"Patriotic Administration Center/Heavy Machine Gun.svg",
+  "RS-422 Railgun":"Patriotic Administration Center/Railgun.svg",
+  "FAF-14 Spear":"Patriotic Administration Center/Spear.svg",
+  "GL-21 Grenade Launcher":"Engineering Bay/Grenade Launcher.svg",
+  "LAS-98 Laser Cannon":"Engineering Bay/Laser Cannon.svg",
+  "ARC-3 Arc Thrower":"Engineering Bay/Arc Thrower.svg",
+  "LAS-99 Quasar Cannon":"Engineering Bay/Quasar Cannon.svg",
+  "RL-77 Airburst Rocket Launcher":"Patriotic Administration Center/Airburst Rocket Launcher.svg",
+  "LIFT-850 Jump Pack":"Hangar/Jump Pack.svg",
+  "B-1 Supply Pack":"Engineering Bay/Supply Pack.svg",
+  "SH-20 Ballistic Shield":"Engineering Bay/Ballistic Shield Backpack.svg",
+  "SH-32 Shield Generator Pack":"Engineering Bay/Shield Generator Pack.svg",
+  "AX/AR-23 Guard Dog":"Robotics Workshop/Guard Dog.svg",
+  "AX/LAS-5 Guard Dog Rover":"Engineering Bay/Guard Dog Rover.svg",
+  "SH-51 Directional Shield":"Urban Legends/Directional Shield.svg",
+  "HMG Emplacement":"Bridge/HMG Emplacement.svg",
+  "Shield Generator Relay":"Bridge/Shield Generator Relay.svg",
+  "A/ARC-3 Tesla Tower":"Bridge/Tesla Tower.svg",
+  "Anti-Tank Emplacement":"Urban Legends/Anti-Tank Emplacement.svg",
+  "MD-6 Anti-Personnel Mines":"Engineering Bay/Anti-Personnel Minefield.svg",
+  "MD-14 Incendiary Mines":"Engineering Bay/Incendiary Mines.svg",
+  "MD-I4 Anti-Tank Mines":"Engineering Bay/Anti-Tank Mines.svg",
+  "Machine Gun Sentry":"Robotics Workshop/Machine Gun Sentry.svg",
+  "Gatling Sentry":"Robotics Workshop/Gatling Sentry.svg",
+  "Mortar Sentry":"Robotics Workshop/Mortar Sentry.svg",
+  "Autocannon Sentry":"Robotics Workshop/Autocannon Sentry.svg",
+  "Rocket Sentry":"Robotics Workshop/Rocket Sentry.svg",
+  "EMS Mortar Sentry":"Robotics Workshop/EMS Mortar Sentry.svg",
+  "Flame Sentry":"Urban Legends/Flame Sentry.svg",
+  "EXO-45 Patriot Exosuit":"Robotics Workshop/Patriot Exosuit.svg",
+  "EXO-49 Emancipator Exosuit":"Robotics Workshop/Emancipator Exosuit.svg",
+};
+function iconUrl(name){
+  const p=ICONS[name];
+  if(!p) return null;
+  return CDN+p.split('/').map(s=>encodeURIComponent(s)).join('/');
+}
+
 const S=[
-  // MISSION
   {n:"Reinforce",          c:"Mission",  k:["U","D","R","L","U"]},
   {n:"Resupply",           c:"Mission",  k:["D","D","U","R"]},
   {n:"SOS Beacon",         c:"Mission",  k:["U","D","R","U"]},
   {n:"Hellbomb",           c:"Mission",  k:["D","U","L","D","U","R","D","U"]},
-  {n:"SSSD Delivery",      c:"Mission",  k:["D","D","D","U","U"]},
   {n:"Seismic Probe",      c:"Mission",  k:["U","U","L","R","D","D"]},
   {n:"Upload Data",        c:"Mission",  k:["L","R","U","U","U"]},
   {n:"Eagle Re-arm",       c:"Mission",  k:["U","U","L","U","R"]},
   {n:"Illumination Flare", c:"Mission",  k:["R","R","L","L"]},
   {n:"SEAF Artillery",     c:"Mission",  k:["R","U","U","D"]},
   {n:"Super Earth Flag",   c:"Mission",  k:["D","U","D","U"]},
-  // ORBITAL
   {n:"Orbital Precision Strike",  c:"Orbital",k:["R","R","U"]},
   {n:"Orbital Gatling Barrage",   c:"Orbital",k:["R","D","L","U","U"]},
   {n:"Orbital Airburst Strike",   c:"Orbital",k:["R","R","R"]},
@@ -249,7 +364,6 @@ const S=[
   {n:"Orbital EMS Strike",        c:"Orbital",k:["R","R","L","D"]},
   {n:"Orbital Smoke Strike",      c:"Orbital",k:["R","R","D","U"]},
   {n:"Orbital Napalm Barrage",    c:"Orbital",k:["R","R","D","L","R","U"]},
-  // EAGLE
   {n:"Eagle Strafing Run",      c:"Eagle",k:["U","R","R"]},
   {n:"Eagle Airstrike",         c:"Eagle",k:["U","R","D","R"]},
   {n:"Eagle Cluster Bomb",      c:"Eagle",k:["U","R","D","D","R"]},
@@ -257,7 +371,6 @@ const S=[
   {n:"Eagle Smoke Strike",      c:"Eagle",k:["U","R","U","D"]},
   {n:"Eagle 110mm Rocket Pods", c:"Eagle",k:["U","R","U","L"]},
   {n:"Eagle 500kg Bomb",        c:"Eagle",k:["U","R","D","D","D"]},
-  // SUPPORT WEAPONS
   {n:"MG-43 Machine Gun",             c:"Support",k:["D","L","D","U","R"]},
   {n:"APW-1 Anti-Materiel Rifle",     c:"Support",k:["D","L","R","U","D"]},
   {n:"M-105 Stalwart",                c:"Support",k:["D","L","D","U","U","L"]},
@@ -275,7 +388,6 @@ const S=[
   {n:"RL-77 Airburst Rocket Launcher",c:"Support",k:["D","U","U","L","R"]},
   {n:"SG-8P Punisher Plasma",         c:"Support",k:["D","L","D","D","R"]},
   {n:"CB-9 Exploding Crossbow",       c:"Support",k:["D","L","U","R","D"]},
-  // BACKPACKS
   {n:"LIFT-850 Jump Pack",          c:"Backpack",k:["D","U","U","D","U"]},
   {n:"B-1 Supply Pack",             c:"Backpack",k:["D","L","D","U","U","D"]},
   {n:"SH-20 Ballistic Shield",      c:"Backpack",k:["D","L","D","D","U","L"]},
@@ -283,16 +395,13 @@ const S=[
   {n:"AX/AR-23 Guard Dog",          c:"Backpack",k:["D","U","L","U","R","D"]},
   {n:"AX/LAS-5 Guard Dog Rover",    c:"Backpack",k:["D","U","L","U","R","R"]},
   {n:"SH-51 Directional Shield",    c:"Backpack",k:["D","U","L","R","U","U"]},
-  // EMPLACEMENTS
   {n:"HMG Emplacement",         c:"Emplacement",k:["D","U","L","R","R","L"]},
   {n:"Shield Generator Relay",  c:"Emplacement",k:["D","D","L","R","L","R"]},
   {n:"A/ARC-3 Tesla Tower",     c:"Emplacement",k:["D","U","R","U","L","R"]},
   {n:"Anti-Tank Emplacement",   c:"Emplacement",k:["D","U","L","R","R","R"]},
-  // MINES
   {n:"MD-6 Anti-Personnel Mines",c:"Mines",k:["D","L","U","R"]},
   {n:"MD-14 Incendiary Mines",   c:"Mines",k:["D","L","L","D"]},
   {n:"MD-I4 Anti-Tank Mines",    c:"Mines",k:["D","L","U","U"]},
-  // SENTRIES
   {n:"Machine Gun Sentry",   c:"Sentry",k:["D","U","R","R","U"]},
   {n:"Gatling Sentry",       c:"Sentry",k:["D","U","R","L"]},
   {n:"Mortar Sentry",        c:"Sentry",k:["D","U","R","R","D"]},
@@ -300,154 +409,117 @@ const S=[
   {n:"Rocket Sentry",        c:"Sentry",k:["D","U","R","R","L"]},
   {n:"EMS Mortar Sentry",    c:"Sentry",k:["D","U","R","D","R"]},
   {n:"Flame Sentry",         c:"Sentry",k:["D","U","R","D","U","U"]},
-  // EXOSUITS
   {n:"EXO-45 Patriot Exosuit",    c:"Exosuit",k:["L","D","R","U","L","D","D"]},
   {n:"EXO-49 Emancipator Exosuit",c:"Exosuit",k:["L","D","R","U","L","D","U"]},
 ];
 
 const CAT_COLOR={
-  Mission:"#f0a040", Orbital:"#9b5de5", Eagle:"#00bbf9",
-  Support:"#4cc9f0", Backpack:"#3a86ff", Emplacement:"#8338ec",
-  Mines:"#ff4488",   Sentry:"#06d6a0",  Exosuit:"#ff9f1c",
+  Mission:"#f0a040",Orbital:"#9b5de5",Eagle:"#00bbf9",
+  Support:"#4cc9f0",Backpack:"#3a86ff",Emplacement:"#8338ec",
+  Mines:"#ff4488",Sentry:"#06d6a0",Exosuit:"#ff9f1c",
 };
 const CAT_ICON={
-  Mission:"🎯", Orbital:"🛸", Eagle:"🦅",
-  Support:"🔫", Backpack:"🎒", Emplacement:"🏗",
-  Mines:"💣",  Sentry:"🤖",  Exosuit:"🦾",
+  Mission:"🎯",Orbital:"🛸",Eagle:"🦅",
+  Support:"🔫",Backpack:"🎒",Emplacement:"🏗",
+  Mines:"💣",Sentry:"🤖",Exosuit:"🦾",
 };
 const SYM={U:"↑",D:"↓",L:"←",R:"→"};
 
-let inp=[], resetTimer=null, ctx=null;
+let inp=[],resetTimer=null,ctx=null;
 
-function audio(){
-  if(!ctx) ctx=new(window.AudioContext||window.webkitAudioContext)();
-  return ctx;
-}
+function audio(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();return ctx;}
 function beep(f=440,d=.08,t='square',v=.12){
   try{const a=audio(),o=a.createOscillator(),g=a.createGain();
-    o.connect(g);g.connect(a.destination);
-    o.type=t;o.frequency.value=f;
+    o.connect(g);g.connect(a.destination);o.type=t;o.frequency.value=f;
     g.gain.setValueAtTime(v,a.currentTime);
     g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);
     o.start();o.stop(a.currentTime+d);}catch(e){}
 }
-function beepOK(){
-  beep(523,.1,'square',.18);
-  setTimeout(()=>beep(659,.1,'square',.18),100);
-  setTimeout(()=>beep(784,.22,'square',.18),200);
-}
-function beepErr(){beep(180,.2,'sawtooth',.1);}
+function beepOK(){beep(523,.1,'square',.18);setTimeout(()=>beep(659,.1,'square',.18),100);setTimeout(()=>beep(784,.22,'square',.18),200);}
+function beepErr(){beep(180,.18,'sawtooth',.1);}
 function vibe(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
-
-function ev(d,btn){
-  event.preventDefault();
-  addDir(d);
-  btn.classList.add('press');
-  setTimeout(()=>btn.classList.remove('press'),150);
-}
 
 function addDir(d){
   if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
   inp=[...inp,d];
   const exact=getExact();
   if(exact){
-    beepOK();
-    vibe([60,40,60,40,120]);
-    showFlash(exact);
-    resetTimer=setTimeout(clr,3500);
+    beepOK();vibe([60,40,60,40,120]);
+    showFlash(exact);resetTimer=setTimeout(clr,3500);
   } else {
-    const pos=getFiltered();
-    if(pos.length===0) beepErr();
-    else beep(400+inp.length*50,.06,'square');
+    if(getFiltered().length===0)beepErr();else beep(400+inp.length*50,.06,'square');
     vibe(25);
   }
   render();
 }
-
-function bksp(){
-  if(inp.length){inp.pop();beep(300,.05,'square',.1);render();}
-}
+function bksp(){if(inp.length){inp.pop();beep(300,.05,'square',.1);render();}}
 function clr(){
-  inp=[];
-  if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
-  document.getElementById('flash').classList.remove('show');
-  render();
+  inp=[];if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
+  document.getElementById('flash').classList.remove('show');render();
 }
+function getFiltered(){return S.filter(s=>{for(let i=0;i<inp.length;i++)if(s.k[i]!==inp[i])return false;return true;});}
+function getExact(){return S.find(s=>s.k.length===inp.length&&s.k.every((d,i)=>d===inp[i]))||null;}
 
-function getFiltered(){
-  return S.filter(s=>{
-    for(let i=0;i<inp.length;i++) if(s.k[i]!==inp[i]) return false;
-    return true;
-  });
-}
-function getExact(){
-  return S.find(s=>s.k.length===inp.length&&s.k.every((d,i)=>d===inp[i]))||null;
+function setIconEl(imgEl,emojiEl,name,catEmoji){
+  const url=iconUrl(name);
+  if(url){
+    imgEl.src=url;imgEl.style.display='';emojiEl.style.display='none';
+    imgEl.onerror=()=>{imgEl.style.display='none';emojiEl.style.display='';};
+  } else {
+    imgEl.style.display='none';emojiEl.style.display='';emojiEl.textContent=catEmoji||'★';
+  }
 }
 
 function showFlash(s){
-  document.getElementById('flash-icon').textContent=CAT_ICON[s.c]||'★';
+  const url=iconUrl(s.n);
+  const fi=document.getElementById('flash-img');
+  const fe=document.getElementById('flash-emoji');
+  if(url){fi.src=url;fi.style.display='';fe.style.display='none';fi.onerror=()=>{fi.style.display='none';fe.style.display='';fe.textContent=CAT_ICON[s.c]||'★';};}
+  else{fi.style.display='none';fe.style.display='';fe.textContent=CAT_ICON[s.c]||'★';}
   document.getElementById('flash-name').textContent=s.n.toUpperCase();
   document.getElementById('flash-name').style.color=CAT_COLOR[s.c]||'var(--success)';
   document.getElementById('flash-code').textContent=s.k.map(d=>SYM[d]).join(' ');
   const fl=document.getElementById('flash');
-  fl.classList.add('show');
-  setTimeout(()=>fl.classList.remove('show'),2200);
+  fl.classList.add('show');setTimeout(()=>fl.classList.remove('show'),2200);
 }
 
 function render(){
   // sequence
   const sd=document.getElementById('seq-display');
-  if(inp.length===0){
-    sd.innerHTML='<span id="seq-empty">ENTER DIRECTIONAL CODE...</span><div class="seq-cursor"></div>';
-  } else {
-    sd.innerHTML=inp.map(d=>`<span class="seq-arrow">${SYM[d]}</span>`).join('')
-      +'<div class="seq-cursor"></div>';
-  }
+  sd.innerHTML=inp.length===0
+    ?'<span id="seq-empty">ENTER DIRECTIONAL CODE...</span><div class="seq-cursor"></div>'
+    :inp.map(d=>`<span class="seq-arrow">${SYM[d]}</span>`).join('')+'<div class="seq-cursor"></div>';
 
-  // match status
+  // match bar
   const ms=document.getElementById('match-section');
   const me=document.getElementById('match-empty');
   const mc=document.getElementById('match-content');
-  const exact=getExact();
-  const fil=getFiltered();
+  const exact=getExact();const fil=getFiltered();
   if(exact){
-    me.style.display='none';
-    mc.classList.add('show');
-    ms.classList.add('matched');
-    document.getElementById('match-icon').textContent=CAT_ICON[exact.c]||'★';
+    me.style.display='none';mc.classList.add('show');ms.classList.add('matched');
+    setIconEl(document.getElementById('match-icon-img'),document.getElementById('match-icon-emoji'),exact.n,CAT_ICON[exact.c]);
     document.getElementById('match-name').textContent=exact.n.toUpperCase();
     document.getElementById('match-name').style.color=CAT_COLOR[exact.c]||'var(--success)';
     document.getElementById('match-cat').textContent='— '+exact.c.toUpperCase()+' —';
-    document.getElementById('match-status').textContent='★ CALLED ★';
   } else {
-    mc.classList.remove('show');
-    ms.classList.remove('matched');
-    me.style.display='block';
-    if(inp.length===0){
-      me.textContent='— AWAITING INPUT —';
-      me.style.color='var(--text-dim)';
-    } else if(fil.length===0){
-      me.textContent='⚠ INVALID SEQUENCE';
-      me.style.color='var(--danger)';
-    } else {
-      me.textContent=fil.length+' POSSIBLE MATCH'+(fil.length!==1?'ES':'');
-      me.style.color='var(--text-dim)';
-    }
+    mc.classList.remove('show');ms.classList.remove('matched');me.style.display='block';
+    if(inp.length===0){me.textContent='— AWAITING INPUT —';me.style.color='var(--text-dim)';}
+    else if(fil.length===0){me.textContent='⚠ INVALID SEQUENCE';me.style.color='var(--danger)';}
+    else{me.textContent=fil.length+' POSSIBLE MATCH'+(fil.length!==1?'ES':'');me.style.color='var(--text-dim)';}
   }
 
   // list
-  const fil2=inp.length===0?S:fil;
-  document.getElementById('list-count').textContent=fil2.length+' ENTRIES';
-  const list=document.getElementById('stratagem-list');
-  list.innerHTML=fil2.map(s=>{
+  const show=inp.length===0?S:fil;
+  document.getElementById('list-count').textContent=show.length+' ENTRIES';
+  document.getElementById('stratagem-list').innerHTML=show.map(s=>{
     const col=CAT_COLOR[s.c]||'#888';
     const isEx=s.k.length===inp.length&&s.k.every((d,i)=>d===inp[i]);
-    const codeHtml=s.k.map((d,i)=>{
-      const sym=SYM[d];
-      return i<inp.length?`<span class="mp">${sym}</span>`:sym;
-    }).join(' ');
-    return `<div class="si${isEx?' exact':''}" onclick="preview('${s.n.replace(/'/g,"\\'")}')">
-      <div class="si-code">${codeHtml}</div>
+    const code=s.k.map((d,i)=>i<inp.length?`<span class="mp">${SYM[d]}</span>`:SYM[d]).join(' ');
+    const url=iconUrl(s.n);
+    const imgHtml=url?`<img class="si-img" src="${url}" alt="" onerror="this.style.display='none'">`:'';
+    return `<div class="si${isEx?' exact':''}" onclick="preview('${s.n.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">
+      ${imgHtml}
+      <div class="si-code">${code}</div>
       <div class="si-name">${s.n}</div>
       <div class="si-cat" style="color:${col};border:1px solid ${col}33;background:${col}18">${s.c.toUpperCase()}</div>
     </div>`;
@@ -455,17 +527,18 @@ function render(){
 }
 
 function preview(name){
-  const s=S.find(x=>x.n===name);
-  if(!s) return;
+  const s=S.find(x=>x.n===name);if(!s)return;
   if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
-  inp=[...s.k];
-  beepOK();
-  showFlash(s);
-  resetTimer=setTimeout(clr,3500);
-  render();
+  inp=[...s.k];beepOK();showFlash(s);resetTimer=setTimeout(clr,3500);render();
 }
 
-// fullscreen
+function toggleList(){
+  const app=document.getElementById('app');
+  const open=app.classList.toggle('list-open');
+  document.getElementById('list-btn').classList.toggle('active',open);
+  document.getElementById('list-btn').textContent=open?'✕ LIST':'≡ LIST';
+}
+
 function toggleFS(){
   const el=document.documentElement;
   if(!document.fullscreenElement&&!document.webkitFullscreenElement){
@@ -481,23 +554,30 @@ function updFS(){
 document.addEventListener('fullscreenchange',updFS);
 document.addEventListener('webkitfullscreenchange',updFS);
 
-// keyboard support
-document.addEventListener('keydown',e=>{
-  const m={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',
-           w:'U',s:'D',a:'L',d:'R',W:'U',S:'D',A:'L',D:'R'};
-  if(m[e.key]){
+// D-pad pointer events (handles both touch & mouse, no double-fire)
+document.querySelectorAll('.db[data-dir]').forEach(btn=>{
+  btn.addEventListener('pointerdown',e=>{
     e.preventDefault();
-    addDir(m[e.key]);
-    const btn=document.getElementById('b'+m[e.key]);
-    if(btn){btn.classList.add('press');setTimeout(()=>btn.classList.remove('press'),150);}
+    addDir(btn.dataset.dir);
+    btn.classList.add('press');
+    setTimeout(()=>btn.classList.remove('press'),150);
+  });
+});
+document.getElementById('bksp-btn').addEventListener('pointerdown',e=>{e.preventDefault();bksp();});
+document.getElementById('clr-btn').addEventListener('pointerdown',e=>{e.preventDefault();clr();});
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  const m={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',w:'U',s:'D',a:'L',d:'R',W:'U',S:'D',A:'L',D:'R'};
+  if(m[e.key]){
+    e.preventDefault();addDir(m[e.key]);
+    const b=document.querySelector(`.db[data-dir="${m[e.key]}"]`);
+    if(b){b.classList.add('press');setTimeout(()=>b.classList.remove('press'),150);}
   } else if(e.key==='Backspace'){bksp();}
   else if(e.key==='Escape'||e.key==='Delete'){clr();}
 });
 
-// dismiss flash on tap
-document.getElementById('flash').addEventListener('click',()=>{
-  document.getElementById('flash').classList.remove('show');
-});
+document.getElementById('flash').addEventListener('click',()=>{document.getElementById('flash').classList.remove('show');});
 
 render();
 </script>
