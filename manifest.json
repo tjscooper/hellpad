@@ -3,7 +3,7 @@
   "short_name": "HELLPAD",
   "description": "Helldivers 2 stratagem code input device for cosplay",
   "display": "fullscreen",
-  "orientation": "portrait",
+  "orientation": "landscape",
   "background_color": "#020509",
   "theme_color": "#020509",
   "start_url": ".",
