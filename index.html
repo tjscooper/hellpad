@@ -198,6 +198,74 @@
 
     /* fullscreen */
     :fullscreen #app,:-webkit-full-screen #app{width:100vw;height:100dvh;}
+
+    /* ── HOME SCREEN ── */
+    #home-screen{
+      position:fixed;inset:0;z-index:1000;
+      background:radial-gradient(ellipse at 50% 42%,#4ab8e8 0%,#1e72b8 28%,#0a3888 58%,#041028 100%);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      cursor:pointer;transition:opacity .4s;
+    }
+    #home-screen.hidden{opacity:0;pointer-events:none;}
+    #app.hidden{display:none;}
+
+    /* corners */
+    .hc{position:absolute;width:28px;height:28px;border-color:rgba(200,230,255,.65);border-style:solid;}
+    .hc-tl{top:14px;left:14px;border-width:2px 0 0 2px;}
+    .hc-tr{top:14px;right:14px;border-width:2px 2px 0 0;}
+    .hc-bl{bottom:14px;left:14px;border-width:0 0 2px 2px;}
+    .hc-br{bottom:14px;right:14px;border-width:0 2px 2px 0;}
+
+    /* emblem */
+    #home-emblem{display:flex;align-items:center;gap:14px;margin-bottom:16px;color:rgba(220,242,255,.88);width:min(440px,78vw);}
+    .he-lines{display:flex;flex-direction:column;gap:5px;flex:1;}
+    .he-line{height:2px;background:currentColor;border-radius:1px;}
+    .he-line.s{height:1px;opacity:.55;}
+    #home-skull{font-size:38px;line-height:1;flex-shrink:0;text-shadow:0 0 12px rgba(180,220,255,.8);}
+
+    /* title */
+    #home-title{
+      font-family:'Arial Black',Arial,sans-serif;
+      font-size:clamp(28px,7vw,56px);
+      font-weight:900;font-style:italic;
+      color:#ddeeff;
+      text-shadow:0 0 28px rgba(120,200,255,.75),0 0 60px rgba(60,140,255,.4),2px 3px 8px rgba(0,0,80,.9);
+      letter-spacing:4px;line-height:1.05;text-align:center;
+      margin-bottom:26px;
+    }
+
+    /* progress */
+    #home-prog-outer{display:flex;align-items:center;gap:10px;width:min(420px,76vw);}
+    .hpa{color:rgba(200,230,255,.5);font-size:13px;flex-shrink:0;}
+    #home-prog-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+    #home-pct{font-size:11px;letter-spacing:3px;color:rgba(200,230,255,.65);font-family:'Courier New',monospace;}
+    #home-prog-bar{width:100%;height:14px;border:1px solid rgba(200,230,255,.35);background:rgba(0,30,90,.45);overflow:hidden;}
+    #home-prog-fill{
+      height:100%;width:0%;
+      background:repeating-linear-gradient(90deg,
+        rgba(220,242,255,.92) 0,rgba(220,242,255,.92) 9px,
+        rgba(100,180,255,.12) 9px,rgba(100,180,255,.12) 13px);
+    }
+
+    /* prompt */
+    #home-prompt{
+      margin-top:20px;font-size:11px;letter-spacing:5px;
+      color:rgba(200,230,255,.55);opacity:0;transition:opacity .5s;
+      animation:hpulse 2s ease-in-out infinite;
+    }
+    @keyframes hpulse{0%,100%{opacity:.3}50%{opacity:.8}}
+
+    /* home fab */
+    #home-fab{
+      position:fixed;bottom:14px;left:14px;z-index:1100;
+      width:46px;height:46px;background:var(--panel2);border:1px solid var(--border);
+      border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:20px;cursor:pointer;touch-action:manipulation;
+      box-shadow:0 2px 12px rgba(0,0,0,.5);color:var(--text);
+      transition:border-color .15s,background .15s;
+    }
+    #home-fab:active{transform:scale(.92);}
+    #fab.hidden{display:none;}
   </style>
 </head>
 <body>
@@ -212,6 +280,41 @@
   <div id="flash-code">↑ ↓ → ← ↑</div>
   <div id="flash-label">STRATAGEM INBOUND</div>
   <div id="flash-bar"></div>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="home-screen">
+  <div class="hc hc-tl"></div>
+  <div class="hc hc-tr"></div>
+  <div class="hc hc-bl"></div>
+  <div class="hc hc-br"></div>
+
+  <div id="home-emblem">
+    <div class="he-lines">
+      <div class="he-line"></div>
+      <div class="he-line s"></div>
+    </div>
+    <div id="home-skull">☠</div>
+    <div class="he-lines">
+      <div class="he-line"></div>
+      <div class="he-line s"></div>
+    </div>
+  </div>
+
+  <div id="home-title">PERSONAL HELLPAD<br>SYSTEM</div>
+
+  <div id="home-prog-outer">
+    <span class="hpa">◄</span>
+    <div id="home-prog-wrap">
+      <div id="home-pct">0%</div>
+      <div id="home-prog-bar">
+        <div id="home-prog-fill"></div>
+      </div>
+    </div>
+    <span class="hpa">►</span>
+  </div>
+
+  <div id="home-prompt">— TAP TO LAUNCH —</div>
 </div>
 
 <!-- BACKDROP -->
@@ -229,8 +332,8 @@
   </div>
 </div>
 
-<!-- APP -->
-<div id="app">
+<!-- APP (hidden until launched) -->
+<div id="app" class="hidden">
 
   <!-- TOP STRIP: sequence + clear -->
   <div id="strip">
@@ -275,8 +378,11 @@
 
 </div>
 
-<!-- FAB: list toggle -->
-<button id="fab" onclick="toggleList()">≡</button>
+<!-- FAB: list toggle (hidden on home) -->
+<button id="fab" class="hidden" onclick="toggleList()">≡</button>
+
+<!-- HOME FAB: bottom-left nav -->
+<button id="home-fab" onclick="toggleScreen()">▶</button>
 
 <script>
 const CDN='https://cdn.jsdelivr.net/gh/nvigneux/Helldivers-2-Stratagems-icons-svg@master/';
@@ -583,6 +689,41 @@ document.addEventListener('keydown',e=>{
 });
 
 document.getElementById('flash').addEventListener('click',()=>{document.getElementById('flash').classList.remove('show');});
+
+/* ── SCREEN NAV ── */
+let onHome=true;
+function showKeypad(){
+  onHome=false;
+  document.getElementById('home-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('fab').classList.remove('hidden');
+  document.getElementById('home-fab').textContent='⌂';
+  render();
+}
+function showHome(){
+  onHome=true;
+  closeList();
+  document.getElementById('home-screen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('fab').classList.add('hidden');
+  document.getElementById('home-fab').textContent='▶';
+}
+function toggleScreen(){onHome?showKeypad():showHome();}
+document.getElementById('home-screen').addEventListener('click',showKeypad);
+
+/* ── BOOT ANIMATION ── */
+(function bootAnim(){
+  const fill=document.getElementById('home-prog-fill');
+  const pct=document.getElementById('home-pct');
+  const prompt=document.getElementById('home-prompt');
+  let n=0;
+  const iv=setInterval(()=>{
+    n=Math.min(100,n+Math.ceil(Math.random()*4+1));
+    pct.textContent=n+'%';
+    fill.style.width=n+'%';
+    if(n>=100){clearInterval(iv);setTimeout(()=>{prompt.style.opacity='1';},400);}
+  },28);
+})();
 
 render();
 </script>
