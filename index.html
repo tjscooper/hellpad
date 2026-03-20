@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#020509">
+  <link rel="manifest" href="manifest.json">
+  <title>HELLPAD</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --bg:#020509;
+      --panel:#060d18;
+      --panel2:#0a1828;
+      --border:#1a5a7a;
+      --glow:#00c8f0;
+      --glow2:#0090c0;
+      --text:#a0d8f0;
+      --text-bright:#d0f0ff;
+      --text-dim:#2a6080;
+      --btn-bg:#040c18;
+      --success:#f0a040;
+      --success2:#e06820;
+      --danger:#d03040;
+    }
+    html,body{height:100%;width:100%;background:var(--bg);color:var(--text);
+      font-family:'Courier New',Courier,monospace;overflow:hidden;
+      user-select:none;-webkit-user-select:none;}
+
+    /* scanline overlay */
+    body::after{content:'';position:fixed;inset:0;
+      background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px);
+      pointer-events:none;z-index:9999;}
+
+    #app{display:flex;flex-direction:column;height:100%;height:100dvh;max-width:480px;margin:0 auto;}
+
+    /* ── HEADER ── */
+    #hdr{display:flex;align-items:center;justify-content:space-between;
+      padding:6px 12px;border-bottom:1px solid var(--border);
+      background:var(--panel);flex-shrink:0;}
+    #hdr-title{display:flex;align-items:center;gap:8px;font-size:20px;
+      font-weight:bold;letter-spacing:5px;color:var(--glow);
+      text-shadow:0 0 8px var(--glow),0 0 20px var(--glow2);}
+    #hdr-sub{font-size:8px;letter-spacing:2px;color:var(--text-dim);margin-top:1px;}
+    #hdr-btns{display:flex;gap:6px;}
+    .hbtn{background:var(--btn-bg);border:1px solid var(--border);color:var(--text);
+      padding:5px 9px;border-radius:3px;cursor:pointer;font-family:inherit;
+      font-size:11px;letter-spacing:1px;transition:all .1s;}
+    .hbtn:active{border-color:var(--glow);color:var(--glow);background:rgba(0,200,240,.08);}
+
+    /* ── SEQUENCE ── */
+    #seq-section{padding:8px 12px;border-bottom:1px solid var(--border);
+      background:var(--panel);flex-shrink:0;}
+    #seq-label{font-size:8px;letter-spacing:3px;color:var(--text-dim);margin-bottom:5px;}
+    #seq-display{display:flex;align-items:center;gap:4px;flex-wrap:wrap;
+      min-height:38px;padding:5px 8px;background:var(--bg);
+      border:1px solid var(--border);border-radius:3px;}
+    .seq-arrow{display:inline-flex;align-items:center;justify-content:center;
+      width:28px;height:28px;background:var(--panel2);border:1px solid var(--border);
+      border-radius:3px;font-size:15px;color:var(--glow);
+      text-shadow:0 0 6px var(--glow);flex-shrink:0;animation:ain .1s ease;}
+    @keyframes ain{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+    .seq-cursor{width:2px;height:22px;background:var(--glow);border-radius:1px;
+      animation:blink 1s step-end infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+    #seq-empty{color:var(--text-dim);font-size:10px;letter-spacing:2px;}
+
+    /* ── MATCH STATUS ── */
+    #match-section{padding:7px 12px;border-bottom:1px solid var(--border);
+      flex-shrink:0;min-height:54px;display:flex;align-items:center;
+      background:var(--panel);transition:all .3s;}
+    #match-section.matched{background:#160800;}
+    #match-empty{color:var(--text-dim);font-size:9px;letter-spacing:3px;
+      width:100%;text-align:center;}
+    #match-content{display:none;width:100%;align-items:center;gap:10px;}
+    #match-content.show{display:flex;}
+    #match-icon{font-size:26px;flex-shrink:0;}
+    #match-info{flex:1;min-width:0;}
+    #match-name{font-size:15px;font-weight:bold;color:var(--success);
+      text-shadow:0 0 10px var(--success2);letter-spacing:1px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #match-cat{font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-top:2px;}
+    #match-status{font-size:9px;letter-spacing:2px;color:var(--success);
+      flex-shrink:0;text-align:right;}
+
+    /* ── LIST ── */
+    #list-section{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);}
+    #list-section::-webkit-scrollbar{width:3px;}
+    #list-section::-webkit-scrollbar-track{background:var(--bg);}
+    #list-section::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    #list-hdr{display:flex;align-items:center;justify-content:space-between;
+      padding:5px 12px;position:sticky;top:0;background:var(--panel);
+      border-bottom:1px solid var(--border);z-index:10;}
+    #list-title{font-size:8px;letter-spacing:3px;color:var(--text-dim);}
+    #list-count{font-size:9px;color:var(--glow);}
+    .si{display:flex;align-items:center;padding:7px 12px;
+      border-bottom:1px solid #081422;cursor:pointer;transition:background .1s;gap:8px;}
+    .si:active,.si:hover{background:var(--panel2);}
+    .si.exact{background:#160800;border-color:var(--success);}
+    .si-code{font-size:11px;color:var(--glow);letter-spacing:1px;flex-shrink:0;
+      width:125px;text-shadow:0 0 4px rgba(0,200,240,.3);}
+    .si-code .mp{color:var(--success);text-shadow:0 0 4px rgba(240,160,64,.5);}
+    .si-name{flex:1;font-size:12px;color:var(--text-bright);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .si-cat{font-size:7px;letter-spacing:1px;padding:2px 4px;
+      border-radius:2px;flex-shrink:0;}
+
+    /* ── DPAD ── */
+    #dpad-section{flex-shrink:0;padding:10px 12px 8px;
+      background:var(--panel);border-top:1px solid var(--border);}
+    #dpad{display:grid;grid-template-columns:repeat(3,1fr);
+      grid-template-rows:repeat(3,1fr);gap:4px;
+      width:204px;height:204px;margin:0 auto 8px;}
+    .db{display:flex;align-items:center;justify-content:center;
+      background:var(--btn-bg);border:1px solid var(--border);border-radius:5px;
+      font-size:26px;color:var(--text);cursor:pointer;
+      transition:all .1s;touch-action:manipulation;}
+    .db:active,.db.press{background:rgba(0,200,240,.1);border-color:var(--glow);
+      color:var(--glow);text-shadow:0 0 10px var(--glow);transform:scale(.94);}
+    #dc{background:var(--panel2);cursor:default;
+      display:flex;align-items:center;justify-content:center;}
+    #dc-dot{width:7px;height:7px;background:var(--border);border-radius:50%;}
+    .de{visibility:hidden;}
+    #act-row{display:flex;gap:8px;justify-content:center;}
+    .ab{flex:1;max-width:160px;padding:9px;background:var(--btn-bg);
+      border:1px solid var(--border);border-radius:5px;color:var(--text);
+      font-family:inherit;font-size:10px;letter-spacing:2px;
+      cursor:pointer;text-align:center;transition:all .1s;}
+    .ab:active{background:rgba(0,200,240,.08);border-color:var(--glow);color:var(--glow);}
+    .ab.dng:active{background:rgba(208,48,64,.08);border-color:var(--danger);color:var(--danger);}
+
+    /* ── FLASH OVERLAY ── */
+    #flash{position:fixed;inset:0;z-index:10000;
+      background:rgba(2,5,9,.93);display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:16px;
+      opacity:0;pointer-events:none;transition:opacity .2s;}
+    #flash.show{opacity:1;pointer-events:auto;}
+    #flash-icon{font-size:64px;}
+    #flash-name{font-size:22px;font-weight:bold;letter-spacing:3px;
+      text-align:center;padding:0 20px;
+      text-shadow:0 0 20px var(--success2);}
+    #flash-label{font-size:10px;letter-spacing:6px;color:var(--text-dim);}
+    #flash-code{font-size:18px;color:var(--glow);letter-spacing:6px;
+      text-shadow:0 0 10px var(--glow);}
+
+    /* fullscreen helpers */
+    :fullscreen #app,:-webkit-full-screen #app{max-width:none;}
+  </style>
+</head>
+<body>
+
+<div id="flash">
+  <div id="flash-icon">★</div>
+  <div id="flash-name">REINFORCE</div>
+  <div id="flash-code">↑ ↓ → ← ↑</div>
+  <div id="flash-label">STRATAGEM INBOUND</div>
+</div>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <div>
+      <div id="hdr-title">🦅 HELLPAD</div>
+      <div id="hdr-sub">STRATAGEM INPUT SYSTEM</div>
+    </div>
+    <div id="hdr-btns">
+      <button class="hbtn" id="fs-btn" onclick="toggleFS()">⛶ FULL</button>
+    </div>
+  </div>
+
+  <!-- SEQUENCE DISPLAY -->
+  <div id="seq-section">
+    <div id="seq-label">ACTIVE CODE SEQUENCE</div>
+    <div id="seq-display">
+      <span id="seq-empty">ENTER DIRECTIONAL CODE...</span>
+    </div>
+  </div>
+
+  <!-- MATCH STATUS -->
+  <div id="match-section">
+    <span id="match-empty">— AWAITING INPUT —</span>
+    <div id="match-content">
+      <span id="match-icon">★</span>
+      <div id="match-info">
+        <div id="match-name">REINFORCE</div>
+        <div id="match-cat">MISSION</div>
+      </div>
+      <div id="match-status">READY</div>
+    </div>
+  </div>
+
+  <!-- STRATAGEM LIST -->
+  <div id="list-section">
+    <div id="list-hdr">
+      <span id="list-title">STRATAGEM DATABASE</span>
+      <span id="list-count"></span>
+    </div>
+    <div id="stratagem-list"></div>
+  </div>
+
+  <!-- DPAD -->
+  <div id="dpad-section">
+    <div id="dpad">
+      <div class="de"></div>
+      <button class="db" id="bU" ontouchstart="ev('U',this)" onclick="ev('U',this)">↑</button>
+      <div class="de"></div>
+      <button class="db" id="bL" ontouchstart="ev('L',this)" onclick="ev('L',this)">←</button>
+      <div class="db" id="dc"><div id="dc-dot"></div></div>
+      <button class="db" id="bR" ontouchstart="ev('R',this)" onclick="ev('R',this)">→</button>
+      <div class="de"></div>
+      <button class="db" id="bD" ontouchstart="ev('D',this)" onclick="ev('D',this)">↓</button>
+      <div class="de"></div>
+    </div>
+    <div id="act-row">
+      <button class="ab" onclick="bksp()">⌫ BACK</button>
+      <button class="ab dng" onclick="clr()">✗ CLEAR</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const S=[
+  // MISSION
+  {n:"Reinforce",          c:"Mission",  k:["U","D","R","L","U"]},
+  {n:"Resupply",           c:"Mission",  k:["D","D","U","R"]},
+  {n:"SOS Beacon",         c:"Mission",  k:["U","D","R","U"]},
+  {n:"Hellbomb",           c:"Mission",  k:["D","U","L","D","U","R","D","U"]},
+  {n:"SSSD Delivery",      c:"Mission",  k:["D","D","D","U","U"]},
+  {n:"Seismic Probe",      c:"Mission",  k:["U","U","L","R","D","D"]},
+  {n:"Upload Data",        c:"Mission",  k:["L","R","U","U","U"]},
+  {n:"Eagle Re-arm",       c:"Mission",  k:["U","U","L","U","R"]},
+  {n:"Illumination Flare", c:"Mission",  k:["R","R","L","L"]},
+  {n:"SEAF Artillery",     c:"Mission",  k:["R","U","U","D"]},
+  {n:"Super Earth Flag",   c:"Mission",  k:["D","U","D","U"]},
+  // ORBITAL
+  {n:"Orbital Precision Strike",  c:"Orbital",k:["R","R","U"]},
+  {n:"Orbital Gatling Barrage",   c:"Orbital",k:["R","D","L","U","U"]},
+  {n:"Orbital Airburst Strike",   c:"Orbital",k:["R","R","R"]},
+  {n:"Orbital 120mm HE Barrage",  c:"Orbital",k:["R","R","D","L","R","D"]},
+  {n:"Orbital 380mm HE Barrage",  c:"Orbital",k:["R","D","U","U","L","D","D"]},
+  {n:"Orbital Walking Barrage",   c:"Orbital",k:["R","D","R","D","R","D"]},
+  {n:"Orbital Laser",             c:"Orbital",k:["R","D","U","R","D"]},
+  {n:"Orbital Railcannon Strike", c:"Orbital",k:["R","U","D","D","R"]},
+  {n:"Orbital Gas Strike",        c:"Orbital",k:["R","R","D","R"]},
+  {n:"Orbital EMS Strike",        c:"Orbital",k:["R","R","L","D"]},
+  {n:"Orbital Smoke Strike",      c:"Orbital",k:["R","R","D","U"]},
+  {n:"Orbital Napalm Barrage",    c:"Orbital",k:["R","R","D","L","R","U"]},
+  // EAGLE
+  {n:"Eagle Strafing Run",      c:"Eagle",k:["U","R","R"]},
+  {n:"Eagle Airstrike",         c:"Eagle",k:["U","R","D","R"]},
+  {n:"Eagle Cluster Bomb",      c:"Eagle",k:["U","R","D","D","R"]},
+  {n:"Eagle Napalm Airstrike",  c:"Eagle",k:["U","R","D","U"]},
+  {n:"Eagle Smoke Strike",      c:"Eagle",k:["U","R","U","D"]},
+  {n:"Eagle 110mm Rocket Pods", c:"Eagle",k:["U","R","U","L"]},
+  {n:"Eagle 500kg Bomb",        c:"Eagle",k:["U","R","D","D","D"]},
+  // SUPPORT WEAPONS
+  {n:"MG-43 Machine Gun",             c:"Support",k:["D","L","D","U","R"]},
+  {n:"APW-1 Anti-Materiel Rifle",     c:"Support",k:["D","L","R","U","D"]},
+  {n:"M-105 Stalwart",                c:"Support",k:["D","L","D","U","U","L"]},
+  {n:"EAT-17 Expendable AT",          c:"Support",k:["D","D","L","U","R"]},
+  {n:"GR-8 Recoilless Rifle",         c:"Support",k:["D","L","R","R","L"]},
+  {n:"FLAM-40 Flamethrower",          c:"Support",k:["D","L","U","D","U"]},
+  {n:"AC-8 Autocannon",               c:"Support",k:["D","L","D","U","U","R"]},
+  {n:"MG-206 Heavy Machine Gun",      c:"Support",k:["D","L","U","D","D"]},
+  {n:"RS-422 Railgun",                c:"Support",k:["D","R","D","U","L","R"]},
+  {n:"FAF-14 Spear",                  c:"Support",k:["D","D","U","D","D"]},
+  {n:"GL-21 Grenade Launcher",        c:"Support",k:["D","L","U","L","D"]},
+  {n:"LAS-98 Laser Cannon",           c:"Support",k:["D","L","D","U","L"]},
+  {n:"ARC-3 Arc Thrower",             c:"Support",k:["D","R","D","U","L","L"]},
+  {n:"LAS-99 Quasar Cannon",          c:"Support",k:["D","D","U","L","R"]},
+  {n:"RL-77 Airburst Rocket Launcher",c:"Support",k:["D","U","U","L","R"]},
+  {n:"SG-8P Punisher Plasma",         c:"Support",k:["D","L","D","D","R"]},
+  {n:"CB-9 Exploding Crossbow",       c:"Support",k:["D","L","U","R","D"]},
+  // BACKPACKS
+  {n:"LIFT-850 Jump Pack",          c:"Backpack",k:["D","U","U","D","U"]},
+  {n:"B-1 Supply Pack",             c:"Backpack",k:["D","L","D","U","U","D"]},
+  {n:"SH-20 Ballistic Shield",      c:"Backpack",k:["D","L","D","D","U","L"]},
+  {n:"SH-32 Shield Generator Pack", c:"Backpack",k:["D","U","L","R","L","R"]},
+  {n:"AX/AR-23 Guard Dog",          c:"Backpack",k:["D","U","L","U","R","D"]},
+  {n:"AX/LAS-5 Guard Dog Rover",    c:"Backpack",k:["D","U","L","U","R","R"]},
+  {n:"SH-51 Directional Shield",    c:"Backpack",k:["D","U","L","R","U","U"]},
+  // EMPLACEMENTS
+  {n:"HMG Emplacement",         c:"Emplacement",k:["D","U","L","R","R","L"]},
+  {n:"Shield Generator Relay",  c:"Emplacement",k:["D","D","L","R","L","R"]},
+  {n:"A/ARC-3 Tesla Tower",     c:"Emplacement",k:["D","U","R","U","L","R"]},
+  {n:"Anti-Tank Emplacement",   c:"Emplacement",k:["D","U","L","R","R","R"]},
+  // MINES
+  {n:"MD-6 Anti-Personnel Mines",c:"Mines",k:["D","L","U","R"]},
+  {n:"MD-14 Incendiary Mines",   c:"Mines",k:["D","L","L","D"]},
+  {n:"MD-I4 Anti-Tank Mines",    c:"Mines",k:["D","L","U","U"]},
+  // SENTRIES
+  {n:"Machine Gun Sentry",   c:"Sentry",k:["D","U","R","R","U"]},
+  {n:"Gatling Sentry",       c:"Sentry",k:["D","U","R","L"]},
+  {n:"Mortar Sentry",        c:"Sentry",k:["D","U","R","R","D"]},
+  {n:"Autocannon Sentry",    c:"Sentry",k:["D","U","R","U","L","U"]},
+  {n:"Rocket Sentry",        c:"Sentry",k:["D","U","R","R","L"]},
+  {n:"EMS Mortar Sentry",    c:"Sentry",k:["D","U","R","D","R"]},
+  {n:"Flame Sentry",         c:"Sentry",k:["D","U","R","D","U","U"]},
+  // EXOSUITS
+  {n:"EXO-45 Patriot Exosuit",    c:"Exosuit",k:["L","D","R","U","L","D","D"]},
+  {n:"EXO-49 Emancipator Exosuit",c:"Exosuit",k:["L","D","R","U","L","D","U"]},
+];
+
+const CAT_COLOR={
+  Mission:"#f0a040", Orbital:"#9b5de5", Eagle:"#00bbf9",
+  Support:"#4cc9f0", Backpack:"#3a86ff", Emplacement:"#8338ec",
+  Mines:"#ff4488",   Sentry:"#06d6a0",  Exosuit:"#ff9f1c",
+};
+const CAT_ICON={
+  Mission:"🎯", Orbital:"🛸", Eagle:"🦅",
+  Support:"🔫", Backpack:"🎒", Emplacement:"🏗",
+  Mines:"💣",  Sentry:"🤖",  Exosuit:"🦾",
+};
+const SYM={U:"↑",D:"↓",L:"←",R:"→"};
+
+let inp=[], resetTimer=null, ctx=null;
+
+function audio(){
+  if(!ctx) ctx=new(window.AudioContext||window.webkitAudioContext)();
+  return ctx;
+}
+function beep(f=440,d=.08,t='square',v=.12){
+  try{const a=audio(),o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);
+    o.type=t;o.frequency.value=f;
+    g.gain.setValueAtTime(v,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);
+    o.start();o.stop(a.currentTime+d);}catch(e){}
+}
+function beepOK(){
+  beep(523,.1,'square',.18);
+  setTimeout(()=>beep(659,.1,'square',.18),100);
+  setTimeout(()=>beep(784,.22,'square',.18),200);
+}
+function beepErr(){beep(180,.2,'sawtooth',.1);}
+function vibe(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
+
+function ev(d,btn){
+  event.preventDefault();
+  addDir(d);
+  btn.classList.add('press');
+  setTimeout(()=>btn.classList.remove('press'),150);
+}
+
+function addDir(d){
+  if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
+  inp=[...inp,d];
+  const exact=getExact();
+  if(exact){
+    beepOK();
+    vibe([60,40,60,40,120]);
+    showFlash(exact);
+    resetTimer=setTimeout(clr,3500);
+  } else {
+    const pos=getFiltered();
+    if(pos.length===0) beepErr();
+    else beep(400+inp.length*50,.06,'square');
+    vibe(25);
+  }
+  render();
+}
+
+function bksp(){
+  if(inp.length){inp.pop();beep(300,.05,'square',.1);render();}
+}
+function clr(){
+  inp=[];
+  if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
+  document.getElementById('flash').classList.remove('show');
+  render();
+}
+
+function getFiltered(){
+  return S.filter(s=>{
+    for(let i=0;i<inp.length;i++) if(s.k[i]!==inp[i]) return false;
+    return true;
+  });
+}
+function getExact(){
+  return S.find(s=>s.k.length===inp.length&&s.k.every((d,i)=>d===inp[i]))||null;
+}
+
+function showFlash(s){
+  document.getElementById('flash-icon').textContent=CAT_ICON[s.c]||'★';
+  document.getElementById('flash-name').textContent=s.n.toUpperCase();
+  document.getElementById('flash-name').style.color=CAT_COLOR[s.c]||'var(--success)';
+  document.getElementById('flash-code').textContent=s.k.map(d=>SYM[d]).join(' ');
+  const fl=document.getElementById('flash');
+  fl.classList.add('show');
+  setTimeout(()=>fl.classList.remove('show'),2200);
+}
+
+function render(){
+  // sequence
+  const sd=document.getElementById('seq-display');
+  if(inp.length===0){
+    sd.innerHTML='<span id="seq-empty">ENTER DIRECTIONAL CODE...</span><div class="seq-cursor"></div>';
+  } else {
+    sd.innerHTML=inp.map(d=>`<span class="seq-arrow">${SYM[d]}</span>`).join('')
+      +'<div class="seq-cursor"></div>';
+  }
+
+  // match status
+  const ms=document.getElementById('match-section');
+  const me=document.getElementById('match-empty');
+  const mc=document.getElementById('match-content');
+  const exact=getExact();
+  const fil=getFiltered();
+  if(exact){
+    me.style.display='none';
+    mc.classList.add('show');
+    ms.classList.add('matched');
+    document.getElementById('match-icon').textContent=CAT_ICON[exact.c]||'★';
+    document.getElementById('match-name').textContent=exact.n.toUpperCase();
+    document.getElementById('match-name').style.color=CAT_COLOR[exact.c]||'var(--success)';
+    document.getElementById('match-cat').textContent='— '+exact.c.toUpperCase()+' —';
+    document.getElementById('match-status').textContent='★ CALLED ★';
+  } else {
+    mc.classList.remove('show');
+    ms.classList.remove('matched');
+    me.style.display='block';
+    if(inp.length===0){
+      me.textContent='— AWAITING INPUT —';
+      me.style.color='var(--text-dim)';
+    } else if(fil.length===0){
+      me.textContent='⚠ INVALID SEQUENCE';
+      me.style.color='var(--danger)';
+    } else {
+      me.textContent=fil.length+' POSSIBLE MATCH'+(fil.length!==1?'ES':'');
+      me.style.color='var(--text-dim)';
+    }
+  }
+
+  // list
+  const fil2=inp.length===0?S:fil;
+  document.getElementById('list-count').textContent=fil2.length+' ENTRIES';
+  const list=document.getElementById('stratagem-list');
+  list.innerHTML=fil2.map(s=>{
+    const col=CAT_COLOR[s.c]||'#888';
+    const isEx=s.k.length===inp.length&&s.k.every((d,i)=>d===inp[i]);
+    const codeHtml=s.k.map((d,i)=>{
+      const sym=SYM[d];
+      return i<inp.length?`<span class="mp">${sym}</span>`:sym;
+    }).join(' ');
+    return `<div class="si${isEx?' exact':''}" onclick="preview('${s.n.replace(/'/g,"\\'")}')">
+      <div class="si-code">${codeHtml}</div>
+      <div class="si-name">${s.n}</div>
+      <div class="si-cat" style="color:${col};border:1px solid ${col}33;background:${col}18">${s.c.toUpperCase()}</div>
+    </div>`;
+  }).join('');
+}
+
+function preview(name){
+  const s=S.find(x=>x.n===name);
+  if(!s) return;
+  if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
+  inp=[...s.k];
+  beepOK();
+  showFlash(s);
+  resetTimer=setTimeout(clr,3500);
+  render();
+}
+
+// fullscreen
+function toggleFS(){
+  const el=document.documentElement;
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement){
+    (el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen).call(el);
+  } else {
+    (document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen).call(document);
+  }
+}
+function updFS(){
+  const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  document.getElementById('fs-btn').textContent=fs?'⛶ EXIT':'⛶ FULL';
+}
+document.addEventListener('fullscreenchange',updFS);
+document.addEventListener('webkitfullscreenchange',updFS);
+
+// keyboard support
+document.addEventListener('keydown',e=>{
+  const m={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',
+           w:'U',s:'D',a:'L',d:'R',W:'U',S:'D',A:'L',D:'R'};
+  if(m[e.key]){
+    e.preventDefault();
+    addDir(m[e.key]);
+    const btn=document.getElementById('b'+m[e.key]);
+    if(btn){btn.classList.add('press');setTimeout(()=>btn.classList.remove('press'),150);}
+  } else if(e.key==='Backspace'){bksp();}
+  else if(e.key==='Escape'||e.key==='Delete'){clr();}
+});
+
+// dismiss flash on tap
+document.getElementById('flash').addEventListener('click',()=>{
+  document.getElementById('flash').classList.remove('show');
+});
+
+render();
+</script>
+</body>
+</html>
