@@ -193,7 +193,7 @@
       background:var(--glow);box-shadow:0 0 10px var(--glow);
       transform-origin:left center;transform:scaleX(0);
     }
-    #flash.show #flash-bar{animation:flash-shrink 4800ms linear forwards;}
+    #flash.show #flash-bar{animation:flash-shrink 4000ms linear forwards;}
     @keyframes flash-shrink{from{transform:scaleX(1);}to{transform:scaleX(0);}}
 
     /* fullscreen */
@@ -564,7 +564,7 @@ function addDir(d){
   const exact=getExact();
   if(exact){
     beepOK();vibe([60,40,60,40,120]);
-    showFlash(exact);resetTimer=setTimeout(clr,5500);
+    showFlash(exact);resetTimer=setTimeout(clr,4800);
   } else {
     if(getFiltered().length===0)beepErr();else beep(400+inp.length*50,.06,'square');
     vibe(25);
@@ -591,7 +591,7 @@ function showFlash(s){
   document.getElementById('flash-name').style.color=CAT_COLOR[s.c]||'var(--success)';
   document.getElementById('flash-code').textContent=s.k.map(d=>SYM[d]).join(' ');
   const fl=document.getElementById('flash');
-  fl.classList.add('show');setTimeout(()=>fl.classList.remove('show'),4800);
+  fl.classList.add('show');setTimeout(()=>fl.classList.remove('show'),4000);
 }
 
 /* ── ARROW SVG (for strip) ── */
