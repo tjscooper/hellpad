@@ -470,9 +470,9 @@ function showFlash(s){
   const url=iconUrl(s.n);
   const fi=document.getElementById('flash-img');
   const fe=document.getElementById('flash-emoji');
-  if(url){fi.src=url;fi.style.display='';fe.style.display='none';
-    fi.onerror=()=>{fi.style.display='none';fe.style.display='';fe.textContent=CAT_ICON[s.c]||'★';};}
-  else{fi.style.display='none';fe.style.display='';fe.textContent=CAT_ICON[s.c]||'★';}
+  if(url){fi.src=url;fi.style.display='block';fe.style.display='none';
+    fi.onerror=()=>{fi.style.display='none';fe.style.display='inline';fe.textContent=CAT_ICON[s.c]||'★';};}
+  else{fi.style.display='none';fe.style.display='inline';fe.textContent=CAT_ICON[s.c]||'★';}
   document.getElementById('flash-name').textContent=s.n.toUpperCase();
   document.getElementById('flash-name').style.color=CAT_COLOR[s.c]||'var(--success)';
   document.getElementById('flash-code').textContent=s.k.map(d=>SYM[d]).join(' ');
