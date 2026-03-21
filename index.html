@@ -180,7 +180,8 @@
       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
       opacity:0;pointer-events:none;transition:opacity .2s;
     }
-    #flash.show{opacity:1;pointer-events:auto;}
+    #flash.show{opacity:1;pointer-events:none;}/* tappable class enables interaction after delay */
+    #flash.show.tappable{pointer-events:auto;}
     #flash-img-wrap{width:240px;height:240px;display:flex;align-items:center;justify-content:center;}
     #flash-img{width:240px;height:240px;object-fit:contain;display:none;}
     #flash-emoji{font-size:174px;}
@@ -588,9 +589,8 @@ function addDir(d){
 }
 function bksp(){if(inp.length){inp.pop();beep(300,.05,'square',.1);render();}}
 function clr(){
-  if(inp.length||resetTimer)flashRed();
   inp=[];if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
-  document.getElementById('flash').classList.remove('show');render();
+  document.getElementById('flash').classList.remove('show','tappable');render();
 }
 function getFiltered(){return S.filter(s=>{for(let i=0;i<inp.length;i++)if(s.k[i]!==inp[i])return false;return true;});}
 function getExact(){return S.find(s=>s.k.length===inp.length&&s.k.every((d,i)=>d===inp[i]))||null;}
@@ -607,7 +607,10 @@ function showFlash(s){
   document.getElementById('flash-name').style.color=CAT_COLOR[s.c]||'var(--success)';
   document.getElementById('flash-code').textContent=s.k.map(d=>SYM[d]).join(' ');
   const fl=document.getElementById('flash');
-  fl.classList.add('show');setTimeout(()=>fl.classList.remove('show'),4000);
+  fl.classList.remove('tappable');
+  fl.classList.add('show');
+  setTimeout(()=>fl.classList.add('tappable'),600);   // prevent accidental tap-through from d-pad press
+  setTimeout(()=>fl.classList.remove('show','tappable'),4000);
 }
 
 /* ── ARROW SVG (for strip) ── */
@@ -691,7 +694,7 @@ document.querySelectorAll('.db[data-dir]').forEach(btn=>{
     setTimeout(()=>btn.classList.remove('press'),150);
   });
 });
-document.getElementById('strip-clr').addEventListener('pointerdown',e=>{e.preventDefault();clr();});
+document.getElementById('strip-clr').addEventListener('pointerdown',e=>{e.preventDefault();flashRed();clr();});
 
 /* ── KEYBOARD ── */
 document.addEventListener('keydown',e=>{
@@ -701,10 +704,13 @@ document.addEventListener('keydown',e=>{
     const b=document.querySelector(`.db[data-dir="${m[e.key]}"]`);
     if(b){b.classList.add('press');setTimeout(()=>b.classList.remove('press'),150);}
   } else if(e.key==='Backspace'){bksp();}
-  else if(e.key==='Escape'||e.key==='Delete'){clr();}
+  else if(e.key==='Escape'||e.key==='Delete'){flashRed();clr();}
 });
 
-document.getElementById('flash').addEventListener('click',()=>{document.getElementById('flash').classList.remove('show');});
+document.getElementById('flash').addEventListener('click',()=>{
+  const fl=document.getElementById('flash');
+  if(fl.classList.contains('tappable'))fl.classList.remove('show','tappable');
+});
 
 /* ── SCREEN NAV ── */
 let onHome=true;
