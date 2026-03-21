@@ -188,6 +188,10 @@
       text-align:center;padding:0 20px;text-shadow:0 0 20px var(--success2);}
     #flash-code{font-size:18px;color:var(--glow);letter-spacing:5px;text-shadow:0 0 12px var(--glow);}
     #flash-label{font-size:10px;letter-spacing:6px;color:var(--text-dim);}
+    #red-flash{
+      position:fixed;inset:0;z-index:9998;background:#c01828;
+      opacity:0;pointer-events:none;transition:opacity .35s ease-out;
+    }
     #flash-bar{
       position:absolute;bottom:0;left:0;height:4px;width:100%;
       background:var(--glow);box-shadow:0 0 10px var(--glow);
@@ -269,6 +273,9 @@
   </style>
 </head>
 <body>
+
+<!-- RED RESET FLASH -->
+<div id="red-flash"></div>
 
 <!-- FLASH OVERLAY -->
 <div id="flash">
@@ -558,21 +565,30 @@ function beepErr(){beep(180,.18,'sawtooth',.1);}
 function vibe(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
 
 /* ── INPUT ── */
+function flashRed(){
+  const el=document.getElementById('red-flash');
+  el.style.transition='none';el.style.opacity='.45';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition='opacity .4s ease-out';el.style.opacity='0';
+  }));
+}
 function addDir(d){
   if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
   inp=[...inp,d];
   const exact=getExact();
   if(exact){
     beepOK();vibe([60,40,60,40,120]);
+    inp=[];  // clear immediately so next stratagem can be entered right away
     showFlash(exact);resetTimer=setTimeout(clr,4800);
   } else {
-    if(getFiltered().length===0){beepErr();vibe([30,20,30]);inp=[];}
+    if(getFiltered().length===0){beepErr();vibe([30,20,30]);flashRed();inp=[];}
     else{beep(400+inp.length*50,.06,'square');vibe(25);}
   }
   render();
 }
 function bksp(){if(inp.length){inp.pop();beep(300,.05,'square',.1);render();}}
 function clr(){
+  if(inp.length||resetTimer)flashRed();
   inp=[];if(resetTimer){clearTimeout(resetTimer);resetTimer=null;}
   document.getElementById('flash').classList.remove('show');render();
 }
